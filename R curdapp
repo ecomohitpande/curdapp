@@ -1,0 +1,59 @@
+library(shiny)
+library(rhandsontable)
+library(DT)
+
+empty_mat = matrix(1,nrow = 3, ncol = 1)
+curr_names = c("EUR","GBP","CAD")
+empty_dat = cbind.data.frame(curr_names,empty_mat)
+names(empty_dat) = c("Currency","Values")
+
+
+ui = fluidPage(sidebarLayout(
+  sidebarPanel(
+    fileInput('file1', 'Choose CSV File'),
+    rHandsontableOutput('contents'),
+    actionButton("go", "Plot Update")
+    
+  ),
+  mainPanel(
+    DT::dataTableOutput("plot1")
+  )
+))
+
+
+server = function(input, output) {
+  
+  indat <- reactiveValues(data=empty_dat)
+  
+  observe({
+    inFile = input$file1
+    if (is.null(inFile))
+      return(NULL)
+    data1 = read.csv(inFile$datapath)
+    indat$data <- data1
+  })
+  
+  observe({
+    if(!is.null(input$contents))
+      indat$data <- hot_to_r(input$contents)
+    
+  })  
+  
+  output$contents <- renderRHandsontable({
+    rhandsontable(indat$data)
+  })
+  
+  portfoliovals <- eventReactive(input$go, {
+    return(indat$data[,2])
+  })
+  
+  output$plot1 <- DT::renderDataTable({
+    plot(portfoliovals()~c(1,2,3),type = "l")
+  })
+  
+}
+
+
+
+
+shinyApp(ui, server)
