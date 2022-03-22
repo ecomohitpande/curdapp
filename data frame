@@ -1,0 +1,118 @@
+
+library(shiny)
+# install.packages("rhandsontable") # install the package
+library(rhandsontable) # load the package
+
+
+
+a = sample(1:10, replace=TRUE)
+b= sample(1:10, replace= TRUE)
+C= a + b
+
+df1<- data.frame(a,b)
+ui = fluidPage(
+  fluidRow(
+  titlePanel(h1("Forecasting")), 
+  tabsetPanel(
+    h4("rhandsontable is an htmlwidget wrapper package based on the handsontable.j"),
+    h4("# how to create a rhandsontable object and use in shiny"),
+    h4("# renderRHandsontable()"),
+    h4("# rHandsontableOutputO()"),
+    hr(),
+    column(4,
+                helpText("non-editable table"),
+                tableOutput("table1")),
+    column(4,
+           helpText("editable table"),  
+           rHandsontableOutput("table"),
+           br(),
+           actionButton("saveBtn", "Save")))))
+
+
+
+
+server<- function(input, output, session) {
+                
+            output$table1 <- renderTable({
+                        df1})
+                      
+output$table <- renderRHandsontable ({
+              rhandsontable(df1)
+  })
+ observeEvent(input$saveBtn,
+             write.csv(hot_to_r(input$table),file = "MyData.csv", row.names = FALSE))
+ }
+library(shiny)
+library(rhandsontable)
+
+empty_mat = matrix(1,nrow = 3, ncol = 1)
+curr_names = c("EUR","GBP","CAD")
+empty_dat = cbind.data.frame(curr_names,empty_mat)
+names(empty_dat) = c("Currency","Values")
+
+
+ui = fluidPage(sidebarLayout(
+  sidebarPanel(
+    fileInput('file1', 'Choose CSV File'),
+    rHandsontableOutput('contents'),
+    actionButton("go", "Plot Update")
+    
+  ),
+  mainPanel(
+    plotOutput("plot1")
+  )
+))
+
+
+server = function(input, output) {
+  
+  indat <- reactiveValues(data=empty_dat)
+  
+  observe({
+    inFile = input$file1
+    if (is.null(inFile))
+      return(NULL)
+    data1 = read.csv(inFile$datapath)
+    indat$data <- data1
+  })
+  
+  observe({
+    if(!is.null(input$contents))
+      indat$data <- hot_to_r(input$contents)
+    
+  })  
+  
+  output$contents <- renderRHandsontable({
+    rhandsontable(indat$data)
+  })
+  
+  portfoliovals <- eventReactive(input$go, {
+    return(indat$data[,2])
+  })
+  
+  output$plot1 <- renderPlot({
+    plot(portfoliovals()~c(1,2,3),type = "l")
+  })
+  
+}
+
+
+shinyApp(ui, server)
+ 
+shinyApp(ui, server)                                                                     
+
+MyData<-file.edit("MyData.csv")                           
+
+write.csv(MyData, "MyData")
+
+Impacted report	Item Nr.	Status	Topic
+
+
+df1 = data.frame(val = 1:10, bool = TRUE, Impactedreport	 = LETTERS[1:30],ItemNr = LETTERS[1:30],
+                 Status = letters[1:10],Topic= letters[1:10],
+                dt = seq(from = Sys.Date(), by = "days", length.out =30),
+                stringsAsFactors = FALSE)
+
+rhandsontable(df1, width = 1000, height = 500) %>%
+  hot_cell(1, 1, "Test comment")
+                             
